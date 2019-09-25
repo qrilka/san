@@ -54,7 +54,7 @@ mod types {
         pub arrival: Square,
         pub check: bool,
         pub en_passant: bool,
-        pub draw_offer: bool
+        pub draw_offer: bool,
     }
 
     #[derive(Debug, Eq, PartialEq, Clone)]
@@ -92,12 +92,16 @@ mod types {
     }
 
     pub struct MoveBuilder(MoveDetails);
-    
+
     pub fn move_figure_to(figure: Figure, file: File, rank: Rank) -> MoveBuilder {
-        MoveBuilder(MoveDetails{
-            figure, arrival: Square{ file, rank },
-            departure: None, capture: false, check: false,
-            en_passant: false, draw_offer: false
+        MoveBuilder(MoveDetails {
+            figure,
+            arrival: Square { file, rank },
+            departure: None,
+            capture: false,
+            check: false,
+            en_passant: false,
+            draw_offer: false,
         })
     }
 
@@ -113,10 +117,10 @@ mod types {
         }
 
         pub fn with_departure_square(mut self, file: File, rank: Rank) -> Self {
-            self.0.departure = Some(Departure::Square(Square{ file, rank }));
+            self.0.departure = Some(Departure::Square(Square { file, rank }));
             self
         }
-        
+
         pub fn capture(mut self) -> Self {
             self.0.capture = true;
             self
@@ -155,7 +159,7 @@ mod render {
                 Figure::Rook => write!(f, "R"),
                 Figure::Bishop => write!(f, "B"),
                 Figure::Knight => write!(f, "N"),
-                Figure::Pawn => Ok(())
+                Figure::Pawn => Ok(()),
             }
         }
     }
@@ -170,12 +174,11 @@ mod render {
                 File::E => write!(f, "e"),
                 File::F => write!(f, "f"),
                 File::G => write!(f, "g"),
-                File::H => write!(f, "h")
+                File::H => write!(f, "h"),
             }
         }
     }
 
-    
     impl fmt::Display for Rank {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             match self {
@@ -186,7 +189,7 @@ mod render {
                 Rank::R5 => write!(f, "5"),
                 Rank::R6 => write!(f, "6"),
                 Rank::R7 => write!(f, "7"),
-                Rank::R8 => write!(f, "8")
+                Rank::R8 => write!(f, "8"),
             }
         }
     }
@@ -202,7 +205,7 @@ mod render {
             match self {
                 Departure::File(file) => write!(f, "{}", file),
                 Departure::Rank(r) => write!(f, "{}", r),
-                Departure::Square(s) => write!(f, "{}", s)
+                Departure::Square(s) => write!(f, "{}", s),
             }
         }
     }
@@ -213,11 +216,18 @@ mod render {
                 HalfMove::HalfMove(d) => {
                     let departure = match d.departure {
                         None => "".to_string(),
-                        Some(ref dep) => format!("{}", dep)
+                        Some(ref dep) => format!("{}", dep),
                     };
-                    write!(f, "{}{}{}{}{}", d.figure, departure,
-                           if d.capture { "x" } else { "" },
-                           d.arrival, if d.check { "+" } else { "" }).unwrap();
+                    write!(
+                        f,
+                        "{}{}{}{}{}",
+                        d.figure,
+                        departure,
+                        if d.capture { "x" } else { "" },
+                        d.arrival,
+                        if d.check { "+" } else { "" }
+                    )
+                    .unwrap();
                     if d.en_passant {
                         write!(f, " e.p.").unwrap()
                     };
@@ -227,27 +237,26 @@ mod render {
                         Ok(())
                     }
                 }
-                HalfMove::KingsideCastling =>
-                    write!(f, "0-0"),
-                HalfMove::QueensideCastling =>
-                    write!(f, "0-0-0")
+                HalfMove::KingsideCastling => write!(f, "0-0"),
+                HalfMove::QueensideCastling => write!(f, "0-0-0"),
             }
         }
     }
-    
-    fn render_move(n: usize, m: &Move) -> String  {
+
+    fn render_move(n: usize, m: &Move) -> String {
         format!("{}. {} {}", n, m.white, m.black)
     }
 
     fn score_by_color(color: Color) -> String {
         match color {
             Color::White => "1-0".to_string(),
-            Color::Black => "0-1".to_string()
+            Color::Black => "0-1".to_string(),
         }
     }
-    
+
     pub fn render_game(game: Game) -> String {
-        let mut v: Vec<String> = game.moves
+        let mut v: Vec<String> = game
+            .moves
             .iter()
             .enumerate()
             .map(|(i, chess_move)| render_move(i + 1, chess_move))
@@ -257,8 +266,7 @@ mod render {
             v.push(format!("{}. {}", n, half_move))
         }
         match game.result {
-            Result::Draw =>
-                v.push("1/2-1/2".to_string()),
+            Result::Draw => v.push("1/2-1/2".to_string()),
             Result::Checkmate(color) => {
                 // a checkmate marker
                 if let Some(last) = v.last_mut() {
@@ -266,8 +274,7 @@ mod render {
                 };
                 v.push(score_by_color(color))
             }
-            Result::Win(color) =>
-                v.push(score_by_color(color)),
+            Result::Win(color) => v.push(score_by_color(color)),
             Result::Unknown => {}
         };
         v.join(" ")
@@ -428,8 +435,9 @@ mod parse {
                         value(Result::Win(Color::White), tag("1-0")),
                         value(Result::Win(Color::Black), tag("0-1")),
                         value(Result::Draw, tag("1/2-1/2")),
-                    ))),
-                |i| Ok((i, Result::Draw))
+                    )),
+                ),
+                |i| Ok((i, Result::Draw)),
             ))(i)
         } else {
             preceded(
@@ -438,7 +446,7 @@ mod parse {
                     value(Result::Win(Color::White), tag("1-0")),
                     value(Result::Win(Color::Black), tag("0-1")),
                     value(Result::Draw, tag("1/2-1/2")),
-                ))
+                )),
             )(i)
         }
     }
@@ -452,10 +460,7 @@ mod parse {
     }
 
     fn parse_black_end_game(draw_offer: bool, i: &str) -> IResult<&str, Result> {
-        alt((
-            parse_black_checkmate,
-            |i| parse_game_result(draw_offer, i)
-        ))(i)
+        alt((parse_black_checkmate, |i| parse_game_result(draw_offer, i)))(i)
     }
 
     fn parse_white_checkmate(i: &str) -> IResult<&str, Result> {
@@ -471,14 +476,13 @@ mod parse {
         let (input, white) = preceded(space1, parse_half_move)(input)?;
         let draw_offer = match white {
             HalfMove::HalfMove(ref details) => details.draw_offer,
-            _ => false
+            _ => false,
         };
         map(
-            alt((
-                parse_white_checkmate,
-                move |i| parse_game_result(draw_offer, i)
-            )),
-            move |result| (white.clone(), result)
+            alt((parse_white_checkmate, move |i| {
+                parse_game_result(draw_offer, i)
+            })),
+            move |result| (white.clone(), result),
         )(input)
     }
 
@@ -486,34 +490,43 @@ mod parse {
         let (input, moves) = separated_list(space1, parse_numbered_full_move)(i)?;
         // as a simplification we assume no draw offer after castling
         let black_draw_offer = match moves.last() {
-            Some(Move{black: HalfMove::HalfMove(ref details), .. }) => details.draw_offer,
-            _ => false
+            Some(Move {
+                black: HalfMove::HalfMove(ref details),
+                ..
+            }) => details.draw_offer,
+            _ => false,
         };
-        let (input, (last_half_move, result)) =
-             alt((
-                 map(|i| parse_black_end_game(black_draw_offer, i),
-                     |result| (None, result)),
-                 // white player does only a half move
-                 map(preceded(space1, parse_white_end_game),
-                     |(white_move, result)| (Some(white_move), result))
-             ))(input)?;
-        Ok((input, Game{ moves, last_half_move, result }))
+        let (input, (last_half_move, result)) = alt((
+            map(
+                |i| parse_black_end_game(black_draw_offer, i),
+                |result| (None, result),
+            ),
+            // white player does only a half move
+            map(
+                preceded(space1, parse_white_end_game),
+                |(white_move, result)| (Some(white_move), result),
+            ),
+        ))(input)?;
+        Ok((
+            input,
+            Game {
+                moves,
+                last_half_move,
+                result,
+            },
+        ))
     }
 
     #[cfg(test)]
     mod tests {
-        use super::*;
         use super::super::render::*;
+        use super::*;
 
         #[test]
         fn test_parse_half_moves() {
             assert_eq!(
                 parse_half_move("e4"),
-                Ok((
-                    "",
-                    move_figure_to(Figure::Pawn, File::E, Rank::R4)
-                        .build()
-                ))
+                Ok(("", move_figure_to(Figure::Pawn, File::E, Rank::R4).build()))
             );
             assert_eq!(
                 parse_half_move("dxe5"),
@@ -553,13 +566,7 @@ mod parse {
                         .build()
                 ))
             );
-            assert_eq!(
-                parse_half_move("0-0"),
-                Ok((
-                    "",
-                    HalfMove::KingsideCastling
-                ))
-            );
+            assert_eq!(parse_half_move("0-0"), Ok(("", HalfMove::KingsideCastling)));
         }
 
         // 3 game notations from the FIDE handbook
@@ -587,9 +594,10 @@ mod parse {
                         5. Qd1xd4 d7d5 6. e5xd6 e.p. Ne4xd6 7. Bc1g5 Nb8c6 \
                         8. Qd4d3 Bf8e7 9. Nb1d2 0-0 10. 0-0-0 Rf8e8 11. Kb1 (=)";
             let (_, parsed) = parse_game(game).unwrap();
-            assert_eq!(render_game(parsed),
-                        // game result is optional when parsing but not so in render
-                       [game, "1/2-1/2"].join(" ")
+            assert_eq!(
+                render_game(parsed),
+                // game result is optional when parsing but not so in render
+                [game, "1/2-1/2"].join(" ")
             );
         }
 
@@ -613,13 +621,15 @@ mod parse {
             // This sample chess game was played between Paul Morphy and his two opponents,
             // the Duke of Brunswick and Count Isouard, in 1858 during a performance of
             // The Barber of Seville at the Paris Opera.
-            let game = "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. d4xe5 Bxf3 5. Qxf3 d6xe5 6. Bc4 Nf6 \
-                        7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 c6xb5 11. Bxb5+ Nd7 \
-                        12. 0-0-0 Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#";
+            let game =
+                "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. d4xe5 Bxf3 5. Qxf3 d6xe5 6. Bc4 Nf6 \
+                 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 c6xb5 11. Bxb5+ Nd7 \
+                 12. 0-0-0 Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#";
             let (_, parsed) = parse_game(game).unwrap();
-            assert_eq!(render_game(parsed),
-                       // game result is optional when parsing but not so in render
-                       [game, "1-0"].join(" ")
+            assert_eq!(
+                render_game(parsed),
+                // game result is optional when parsing but not so in render
+                [game, "1-0"].join(" ")
             );
         }
     }
