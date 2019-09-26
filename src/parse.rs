@@ -235,7 +235,6 @@ pub fn parse_game(i: &str) -> IResult<&str, Game> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::render::*;
     use super::*;
 
     #[test]
@@ -292,7 +291,7 @@ mod tests {
                     6. exd6 e.p. Nxd6 7. Bg5 Nc6 8. Qe3+ Be7 9. Nbd2 0-0 \
                     10. 0-0-0 Re8 11. Kb1 (=) 1/2-1/2";
         let (_, parsed) = parse_game(game).unwrap();
-        assert_eq!(render_game(parsed), game);
+        assert_eq!(parsed.to_string(), game);
     }
 
     #[test]
@@ -301,7 +300,7 @@ mod tests {
                     6. ed6 Nd6 7. Bg5 Nc6 8. Qe3 Be7 9. Nbd2 0-0 10. 0-0-0 Re8 \
                     11. Kb1 (=) 1/2-1/2";
         let (_, parsed) = parse_game(game).unwrap();
-        assert_eq!(render_game(parsed), game);
+        assert_eq!(parsed.to_string(), game);
     }
 
     #[test]
@@ -311,7 +310,7 @@ mod tests {
                     8. Qd4d3 Bf8e7 9. Nb1d2 0-0 10. 0-0-0 Rf8e8 11. Kb1 (=)";
         let (_, parsed) = parse_game(game).unwrap();
         assert_eq!(
-            render_game(parsed),
+            parsed.to_string(),
             // game result is optional when parsing but not so in render
             [game, "1/2-1/2"].join(" ")
         );
@@ -329,7 +328,7 @@ mod tests {
                     36. Ra6+ Kc5 37. Ke1 Nf4 38. g3 Nxh3 39. Kd2 Kb5 40. Rd6 Kc5 41. Ra6 Nf2 \
                     42. g4 Bd3 43. Re6 1/2-1/2";
         let (_, parsed) = parse_game(game).unwrap();
-        assert_eq!(render_game(parsed), game);
+        assert_eq!(parsed.to_string(), game);
     }
 
     #[test]
@@ -342,7 +341,7 @@ mod tests {
                     12. 0-0-0 Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#";
         let (_, parsed) = parse_game(game).unwrap();
         assert_eq!(
-            render_game(parsed),
+            parsed.to_string(),
             // game result is optional when parsing but not so in render
             [game, "1-0"].join(" ")
         );
