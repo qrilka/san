@@ -1,7 +1,7 @@
 use super::types::*;
 use nom::{
-    branch::*, bytes::complete::*, character::complete::*, combinator::*, multi::*,
-    sequence::*, IResult,
+    branch::*, bytes::complete::*, character::complete::*, combinator::*, multi::*, sequence::*,
+    IResult,
 };
 
 fn parse_figure(i: &str) -> IResult<&str, Figure> {
@@ -337,10 +337,9 @@ mod tests {
         // This sample chess game was played between Paul Morphy and his two opponents,
         // the Duke of Brunswick and Count Isouard, in 1858 during a performance of
         // The Barber of Seville at the Paris Opera.
-        let game =
-            "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. d4xe5 Bxf3 5. Qxf3 d6xe5 6. Bc4 Nf6 \
-             7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 c6xb5 11. Bxb5+ Nd7 \
-             12. 0-0-0 Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#";
+        let game = "1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. d4xe5 Bxf3 5. Qxf3 d6xe5 6. Bc4 Nf6 \
+                    7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 c6xb5 11. Bxb5+ Nd7 \
+                    12. 0-0-0 Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8#";
         let (_, parsed) = parse_game(game).unwrap();
         assert_eq!(
             render_game(parsed),
