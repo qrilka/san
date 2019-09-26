@@ -64,68 +64,79 @@ impl fmt::Display for HalfMove {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             HalfMove::HalfMove(d) => {
-                let departure = match d.departure {
-                    None => "".to_string(),
-                    Some(ref dep) => format!("{}", dep),
+                write!(f, "{}", d.figure)?;
+                match d.departure {
+                    None => (),
+                    Some(ref dep) => {
+                        write!(f, "{}", dep)?;
+                    }
                 };
-                write!(
-                    f,
-                    "{}{}{}{}{}",
-                    d.figure,
-                    departure,
-                    if d.capture { "x" } else { "" },
-                    d.arrival,
-                    if d.check { "+" } else { "" }
-                )
-                .unwrap();
-                if d.en_passant {
-                    write!(f, " e.p.").unwrap()
-                };
-                if d.draw_offer {
-                    write!(f, " (=)")
-                } else {
-                    Ok(())
+                if d.capture {
+                    write!(f, "x")?;
                 }
+                write!(f, "{}", d.arrival)?;
+                if d.check {
+                    write!(f, "+")?;
+                }
+                if d.en_passant {
+                    write!(f, " e.p.")?;
+                }
+                if d.draw_offer {
+                    write!(f, " (=)")?;
+                }
+
+                Ok(())
             }
-            HalfMove::KingsideCastling => write!(f, "0-0"),
-            HalfMove::QueensideCastling => write!(f, "0-0-0"),
+            HalfMove::KingsideCastling => {
+                write!(f, "0-0")
+            }
+            HalfMove::QueensideCastling => {
+                write!(f, "0-0-0")
+            }
         }
     }
 }
 
-fn render_move(n: usize, m: &Move) -> String {
-    format!("{}. {} {}", n, m.white, m.black)
-}
-
-fn score_by_color(color: Color) -> String {
-    match color {
-        Color::White => "1-0".to_string(),
-        Color::Black => "0-1".to_string(),
+impl fmt::Display for Move {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} {}", self.white, self.black)
     }
 }
 
-pub fn render_game(game: Game) -> String {
-    let mut v: Vec<String> = game
-        .moves
-        .iter()
-        .enumerate()
-        .map(|(i, chess_move)| render_move(i + 1, chess_move))
-        .collect();
-    if let Some(half_move) = game.last_half_move {
-        let n = game.moves.len() + 1;
-        v.push(format!("{}. {}", n, half_move))
-    }
-    match game.result {
-        Result::Draw => v.push("1/2-1/2".to_string()),
-        Result::Checkmate(color) => {
-            // a checkmate marker
-            if let Some(last) = v.last_mut() {
-                last.push('#')
-            };
-            v.push(score_by_color(color))
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Color::White => write!(f, "1-0"),
+            Color::Black => write!(f, "0-1"),
         }
-        Result::Win(color) => v.push(score_by_color(color)),
-        Result::Unknown => {}
-    };
-    v.join(" ")
+    }
+}
+
+impl fmt::Display for Game {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for (i, chess_move) in self.moves.iter().enumerate() {
+            if i > 0 {
+                write!(f, " ")?;
+            }
+            write!(f, "{}. {}", i + 1, chess_move)?;
+        }
+        if let Some(half_move) = &self.last_half_move {
+            let n = self.moves.len() + 1;
+            write!(f, " {}. {}", n, half_move)?;
+        }
+        match &self.result {
+            Result::Draw => {
+                write!(f, " 1/2-1/2")?;
+            }
+            Result::Checkmate(color) => {
+                // a checkmate marker
+                write!(f, "# {}", color)?;
+            }
+            Result::Win(color) => {
+                write!(f, " {}", color)?;
+            }
+            Result::Unknown => {}
+        };
+        Ok(())
+    }
 }
