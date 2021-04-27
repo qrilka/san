@@ -203,7 +203,7 @@ fn parse_white_end_game(i: &str) -> IResult<&str, (HalfMove, Result)> {
 }
 
 pub fn parse_game(i: &str) -> IResult<&str, Game> {
-    let (input, moves) = separated_list(space1, parse_numbered_full_move)(i)?;
+    let (input, moves) = separated_list0(space1, parse_numbered_full_move)(i)?;
     // as a simplification we assume no draw offer after castling
     let black_draw_offer = match moves.last() {
         Some(Move {
